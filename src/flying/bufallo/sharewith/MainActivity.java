@@ -43,6 +43,7 @@ public class MainActivity extends Activity {
 
         dpHeight = displayMetrics.heightPixels / displayMetrics.density;
         dpWidth = displayMetrics.widthPixels / displayMetrics.density;
+        
 		
 		btnCenter.setOnClickListener(new OnClickListener() {
 			
@@ -64,6 +65,7 @@ public class MainActivity extends Activity {
 		
 		float x = btnCenter.getX();
 		float y = btnCenter.getY();
+		
 		
 		Log.d("TEST ANI", "center x : " + x);
 		Log.d("TEST ANI", "center y : " + y);

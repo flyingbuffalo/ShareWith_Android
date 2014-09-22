@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/gradient"
     tools:context="${relativePackage}.${activityClass}" >
 
     <TextView
@@ -21,6 +22,10 @@
         android:layout_above="@+id/title"
         android:layout_centerHorizontal="true"
         android:contentDescription="center"
-        android:src="@drawable/ic_launcher" />
+        android:src="@drawable/btn_share" />
+    
+    <include
+        android:id="@+id/include"
+        layout="@layout/actionbar" />
 
 </RelativeLayout>

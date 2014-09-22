@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!--
         Base application theme, dependent on API level. This theme is replaced
@@ -11,10 +11,17 @@
             backward-compatibility can go here.
         -->
     </style>
-
+	
     <!-- Application theme. -->
-    <style name="AppTheme" parent="AppBaseTheme">
+    <style name="AppTheme" parent="android:Theme.Light" />
+        
+        <style name="ActionBar">
+            <item name="android:layout_width">fill_parent</item>
+            <item name="android:layout_height">45dp</item>
+            <item name="android:orientation">horizontal</item>
+            <item name="android:background">@drawable/actionbar</item>
+        </style>
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
-    </style>
+
 
 </resources>
