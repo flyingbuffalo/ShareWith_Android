@@ -7,11 +7,20 @@
     android:background="@drawable/gradient"
     tools:context="${relativePackage}.${activityClass}" >
 
-    <TextView
-        android:id="@+id/title"
+    <ImageView
+        android:id="@+id/devices_list_circle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/hello_world"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:src="@drawable/devices_list_circle" 
+        android:visibility="visible"/>
+    
+    <TextView
+        android:id="@+id/information"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/information"
         android:layout_centerInParent="true" 
         />
 
@@ -22,6 +31,7 @@
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
         android:src="@drawable/btn_share" />
+    
     
     <include
         android:id="@+id/include"

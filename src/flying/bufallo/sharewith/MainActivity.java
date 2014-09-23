@@ -18,6 +18,7 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
@@ -28,7 +29,11 @@ public class MainActivity extends Activity {
 	float dpHeight;
 	float dpWidth;
 	
+	float btnSize;
+	
 	RelativeLayout main;
+	TextView textCenter;
+	ImageView backgroundCircle;
 	ImageView btnCenter;	
 	AnimatorSet animatorSet = new AnimatorSet();
 	List<ObjectAnimator> aniList = new ArrayList<ObjectAnimator>();
@@ -39,7 +44,9 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 		
 		main = (RelativeLayout) findViewById(R.id.main);
+		backgroundCircle = (ImageView)findViewById(R.id.devices_list_circle);
 		btnCenter = (ImageView) findViewById(R.id.center);
+		textCenter = (TextView)findViewById(R.id.information);
 		
 		DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
 
@@ -56,9 +63,9 @@ public class MainActivity extends Activity {
 		
 		
 		//size of button is 1/5 scale of device width
-		float btnSize = (float) (dpWidth*0.2);
+		btnSize = (float) (displayMetrics.widthPixels*0.2);
 		Log.d("TEST SCALE", "Size : "+btnSize); 
-		float btnScale = btnSize / CENTER_BTN_SIZE;
+		float btnScale = btnSize / displayMetrics.density / CENTER_BTN_SIZE;
 		Log.d("TEST SCALE", "Scale : "+btnScale);
 		btnCenter.setScaleX(btnScale);
 		btnCenter.setScaleY(btnScale);
@@ -81,8 +88,8 @@ public class MainActivity extends Activity {
 		fadeOut.setDuration(500);
 		btnCenter.startAnimation(fadeOut);
 		
-		float x = (float) (btnCenter.getX()+CENTER_BTN_SIZE*0.5);
-		float y = (float) (btnCenter.getY()+CENTER_BTN_SIZE*0.5);
+		float x = (float) (btnCenter.getX()+btnSize);
+		float y = (float) (btnCenter.getY()+btnSize);
 		
 		
 		Log.d("TEST ANI", "center x : " + x);
@@ -101,7 +108,7 @@ public class MainActivity extends Activity {
 	// 원 위치에 그리고 애니메이션 + 뷰 = > 애니메이터를 만들고 저장
 	public void createdCircle(double x, double y, final int index) {
 		final View child = new View(getApplicationContext());
-		child.setBackground(getResources().getDrawable(R.drawable.circle));		
+		child.setBackground(getResources().getDrawable(R.drawable.btn_android));		
 		child.setX((float) x);
 		child.setY((float) y);
 		child.setVisibility(View.GONE);
@@ -113,6 +120,19 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				Toast.makeText(getApplicationContext(), "this is circle " + index, Toast.LENGTH_SHORT).show();
+				
+				btnCenter.setVisibility(View.GONE);
+				textCenter.setText("Circle "+index);
+			}
+		});
+		
+		textCenter.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				Toast.makeText(getApplicationContext(), "Clicked!", Toast.LENGTH_SHORT).show();
+				
 			}
 		});
 		
