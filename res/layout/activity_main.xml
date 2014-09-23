@@ -19,9 +19,8 @@
         android:id="@+id/center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/title"
+        android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
-        android:contentDescription="center"
         android:src="@drawable/btn_share" />
     
     <include

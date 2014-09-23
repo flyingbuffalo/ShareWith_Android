@@ -23,6 +23,8 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
 	
 	final int MAX_DEVICE = 5;
+	final int CENTER_BTN_SIZE = 180;
+	
 	float dpHeight;
 	float dpWidth;
 	
@@ -44,6 +46,22 @@ public class MainActivity extends Activity {
         dpHeight = displayMetrics.heightPixels / displayMetrics.density;
         dpWidth = displayMetrics.widthPixels / displayMetrics.density;
         
+		/*This is for test*/
+
+		Log.d("TEST DISPLAY", "height : "+displayMetrics.heightPixels+" width : "+displayMetrics.widthPixels);
+		Log.d("TEST DISPLAY", "dpheight : "+dpHeight+" dpwidth : "+dpWidth);
+
+		
+		/*delete it after you use*/       
+		
+		
+		//size of button is 1/5 scale of device width
+		float btnSize = (float) (dpWidth*0.2);
+		Log.d("TEST SCALE", "Size : "+btnSize); 
+		float btnScale = btnSize / CENTER_BTN_SIZE;
+		Log.d("TEST SCALE", "Scale : "+btnScale);
+		btnCenter.setScaleX(btnScale);
+		btnCenter.setScaleY(btnScale);
 		
 		btnCenter.setOnClickListener(new OnClickListener() {
 			
@@ -63,8 +81,8 @@ public class MainActivity extends Activity {
 		fadeOut.setDuration(500);
 		btnCenter.startAnimation(fadeOut);
 		
-		float x = btnCenter.getX();
-		float y = btnCenter.getY();
+		float x = (float) (btnCenter.getX()+CENTER_BTN_SIZE*0.5);
+		float y = (float) (btnCenter.getY()+CENTER_BTN_SIZE*0.5);
 		
 		
 		Log.d("TEST ANI", "center x : " + x);
