@@ -8,6 +8,8 @@ import android.animation.Animator.AnimatorListener;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -21,9 +23,12 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.ipaulpro.afilechooser.utils.FileUtils;
+
 public class MainActivity extends Activity {
 	
-	final int MAX_DEVICE = 5;
+    protected static final int CHOOSE_FILE_RESULT_CODE = 20;
+	final int MAX_DEVICE = 4;
 	final int CENTER_BTN_SIZE = 180;
 	
 	float dpHeight;
@@ -105,6 +110,34 @@ public class MainActivity extends Activity {
 		startFadeIn();
 	}
 	
+	//setText로 기기 정보 설정..?
+	public void setInformation(int index){
+
+		btnCenter.setVisibility(View.GONE);
+		textCenter.setText("Circle "+index);
+		textCenter.setVisibility(View.VISIBLE);
+		
+		
+		//기기 정보 클릭하면 afilechooser
+		textCenter.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+			       Intent target = FileUtils.createGetContentIntent();
+                   // Create the chooser Intent
+                   Intent intent = Intent.createChooser(
+                           target, "aFileChooser");
+                   try {
+                     startActivityForResult(intent, CHOOSE_FILE_RESULT_CODE);
+                   } catch (ActivityNotFoundException e) {
+                       // The reason for the existence of aFileChooser
+                   }
+			}
+		});
+		
+	}
+	
 	// 원 위치에 그리고 애니메이션 + 뷰 = > 애니메이터를 만들고 저장
 	public void createdCircle(double x, double y, final int index) {
 		final View child = new View(getApplicationContext());
@@ -121,8 +154,7 @@ public class MainActivity extends Activity {
 			public void onClick(View v) {
 				Toast.makeText(getApplicationContext(), "this is circle " + index, Toast.LENGTH_SHORT).show();
 				
-				btnCenter.setVisibility(View.GONE);
-				textCenter.setText("Circle "+index);
+				setInformation(index);
 			}
 		});
 		
