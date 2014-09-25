@@ -28,13 +28,15 @@ import com.ipaulpro.afilechooser.utils.FileUtils;
 public class MainActivity extends Activity {
 	
     protected static final int CHOOSE_FILE_RESULT_CODE = 20;
-	final int MAX_DEVICE = 4;
+	final int MAX_DEVICE = 3;
 	final int CENTER_BTN_SIZE = 180;
 	
 	float dpHeight;
 	float dpWidth;
 	
 	float btnSize;
+	
+	boolean isBtnExist = false;
 	
 	RelativeLayout main;
 	TextView textCenter;
@@ -93,16 +95,23 @@ public class MainActivity extends Activity {
 		fadeOut.setDuration(500);
 		btnCenter.startAnimation(fadeOut);
 		
+		
 		float x = (float) (btnCenter.getX()+btnSize);
 		float y = (float) (btnCenter.getY()+btnSize);
 		
 		
 		Log.d("TEST ANI", "center x : " + x);
 		Log.d("TEST ANI", "center y : " + y);
+		
+		//이미 생성되었던 버튼이 있으면 초기화
+		if(isBtnExist){
+			aniList.clear();
+		}
+		
 		// 생성과 페이드 인 아웃터
 		for(int i = 0; i < MAX_DEVICE; i++) {
-			double circle_x = x + x*Math.cos(Math.toRadians((360/MAX_DEVICE)*i));
-			double circle_y = y + x*Math.sin(Math.toRadians((360/MAX_DEVICE)*i));
+			double circle_x = x + (x-100)*Math.cos(Math.toRadians((360/MAX_DEVICE)*i));
+			double circle_y = y + (x-100)*Math.sin(Math.toRadians((360/MAX_DEVICE)*i));
 			createdCircle(circle_x, circle_y, i);
 			
 			Log.d("TEST ANI", "circle " + i + " position : " + circle_x + " , " + circle_y);
@@ -205,7 +214,9 @@ public class MainActivity extends Activity {
 		for(int i = 0; i < aniList.size() - 1; i++) {
 			animatorSet.play(aniList.get(i)).before(aniList.get(i+1));
 		}
+		Log.d("TEST ANILIST", "anilist size : "+aniList.size());
 		animatorSet.start();
+		isBtnExist = true;
 	}
 	
 	
