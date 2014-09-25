@@ -28,8 +28,9 @@ import com.ipaulpro.afilechooser.utils.FileUtils;
 public class MainActivity extends Activity {
 	
     protected static final int CHOOSE_FILE_RESULT_CODE = 20;
-	final int MAX_DEVICE = 3;
+	int MAX_DEVICE = 3;
 	final int CENTER_BTN_SIZE = 180;
+	final int DYNAMIC_BUTTON_ID = 0x8000;
 	
 	float dpHeight;
 	float dpWidth;
@@ -103,9 +104,13 @@ public class MainActivity extends Activity {
 		Log.d("TEST ANI", "center x : " + x);
 		Log.d("TEST ANI", "center y : " + y);
 		
-		//이미 생성되었던 버튼이 있으면 초기화
+		//이미 생성되었던 버튼이 있으면 삭제하고 리스트 초기화
 		if(isBtnExist){
+			for(int i = 0; i < aniList.size(); i++){
+				main.removeView(findViewById(DYNAMIC_BUTTON_ID+i));
+			}
 			aniList.clear();
+			MAX_DEVICE = 5;
 		}
 		
 		// 생성과 페이드 인 아웃터
@@ -154,6 +159,9 @@ public class MainActivity extends Activity {
 		child.setX((float) x);
 		child.setY((float) y);
 		child.setVisibility(View.GONE);
+		
+		//동적 생성된 버튼의 ID 설정
+		child.setId(DYNAMIC_BUTTON_ID+index);
 		
 		Log.d("TEST ANI", "index is " + index);	
 		
