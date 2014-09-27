@@ -306,7 +306,7 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 		super.onActivityResult(requestCode, resultCode, data);
 	}
 	
-	 public static boolean copyFile(InputStream inputStream, DataOutputStream out) {
+	 public static boolean copyFile(InputStream inputStream, OutputStream out) {
 		 byte buf[] = new byte[1024*8];
 		 int len;
 		 Log.d(FILE_TEST, "Start copy file");
@@ -388,7 +388,7 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
                             out.flush();
 
                             DataInputStream dis = new DataInputStream(new FileInputStream(target));
-                            DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+                            DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
 
                             Log.d(FILE_TEST, "Send file using copyFile");
                             copyFile(dis, dos);
@@ -483,23 +483,23 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
                 
                 Log.d(FILE_TEST, "new file path : " + dirs.toString());
 
-                DataOutputStream output = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(f)));
+                FileOutputStream output = new FileOutputStream(f);
 
-                copyFile(new BufferedInputStream(client.getInputStream()), output);
+                copyFile(client.getInputStream(), output);
 
 			} catch (Exception e) {
 				Log.d(FILE_TEST, "Server: error");
 			} finally {
-				 if (client != null) {
-                     if (client.isConnected()) {
-                         try {
-                             Log.d(FILE_TEST, "end send file");
-                             client.close();
-                         } catch (IOException e) {
-                             e.printStackTrace();
-                         }
-                     }
-                 }
+				if(client != null) {
+					if(client.isClosed()) {
+						try {
+							client.close();
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}
 			}
 			return null;
 		}
