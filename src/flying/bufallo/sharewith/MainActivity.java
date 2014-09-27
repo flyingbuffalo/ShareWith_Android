@@ -1,5 +1,7 @@
 package flying.bufallo.sharewith;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
@@ -29,15 +31,13 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Message;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.animation.AccelerateInterpolator;
-import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
+import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -61,6 +61,8 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 
 	public static final String FILE_TEST = "FILE_TEST";
 	public final String DEVICE_INDEX = "device_index";
+	
+	final Animation rotationAnim = new RotateAnimation(0, 360, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
 
 	final int DYNAMIC_BUTTON_ID = 0x8000;
 	
@@ -119,9 +121,13 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 			
 			@Override
 			public void onClick(View v) {
-				Log.d("TEST ANI", "click center");
-                Toast.makeText(getApplicationContext(), "野껓옙源�餓ο옙..", Toast.LENGTH_LONG).show();
+				Log.d("TEST ANI", "click center");                
 				manager.getDevicesAsync();
+				
+				rotationAnim.setInterpolator(new AccelerateInterpolator());
+				rotationAnim.setStartOffset(0);
+				rotationAnim.setDuration(2000);
+				btnCenter.startAnimation(rotationAnim);
             }
 		});
 		
@@ -141,12 +147,10 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 	}
 	
 	public void clickCenter() {
-		Animation fadeOut = new AlphaAnimation(1, 0);
-		fadeOut.setInterpolator(new AccelerateInterpolator()); // and this
-		fadeOut.setStartOffset(0);
-		fadeOut.setDuration(500);
-		btnCenter.startAnimation(fadeOut);
-		
+		rotationAnim.setInterpolator(new AccelerateInterpolator());
+		rotationAnim.setStartOffset(0);
+		rotationAnim.setDuration(2000);
+		btnCenter.startAnimation(rotationAnim);		
 		
 		float x = (float) (btnCenter.getX()+btnSize);
 		float y = (float) (btnCenter.getY()+btnSize);
@@ -259,12 +263,12 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 	}
 		
 	public void startFadeIn() {
-		if(aniList.size() > 1) {
+		if(1 == aniList.size()) {
+			animatorSet.play(aniList.get(0));
+		} else if(0 != aniList.size()) {
 			for(int i = 0; i < aniList.size() - 1; i++) {
 				animatorSet.play(aniList.get(i)).before(aniList.get(i+1));
 			}
-		} else if(aniList.size() == 0) {
-			animatorSet.play(aniList.get(0));
 		}
 		Log.d("TEST ANILIST", "anilist size : "+aniList.size());
 		animatorSet.start();
@@ -292,7 +296,7 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 						Log.d(FILE_TEST, "device index : " + _device_index);
 						WFDDevice device = _device_list.get(_device_index);
 
-						if(device != null && device.device != null) {
+						if(device != null) {
 							manager.pairAsync(device);
 						}
 					}
@@ -303,13 +307,15 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 	}
 	
 	 public static boolean copyFile(InputStream inputStream, OutputStream out, long size) {
-		 byte buf[] = new byte[1024*1024];
+		 byte buf[] = new byte[1024];
 		 int len;
 		 Log.d(FILE_TEST, "Start copy file");
+		 
 		 try {
 			 int i = 0;
 			 while ((len = inputStream.read(buf)) != -1) {
 				 out.write(buf, 0, len);
+				 Log.d(FILE_TEST, "copy buffer times = " + i++ + "and len = " + len);
 			 }
 			 out.close();
 			 inputStream.close();
@@ -324,7 +330,7 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 
 	@Override
 	public void onDeviceConnected(final WFDPairInfo info) {
-		Log.d(FILE_TEST, "called onDeviceConnected");
+		Log.d(FILE_TEST, "called onDeviceConnected");		
 		info.connectSocketAsync(new PairSocketConnectedListener() {
 
             @Override
@@ -334,14 +340,25 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
                         Log.d("TEST", "Server: connection done.");
                         MessageAsyncTask m = new MessageAsyncTask(socket);
                         m.execute();
-                    } else if (info.info.groupFormed) {
+                    } else if (info.info.groupFormed) {                    	
                         Log.d("TEST", "Client: ready to send message");
 
-                        File target = new File(getPathFromUri(Uri.parse(_path)));
+                        Log.d(FILE_TEST, "when socket connected, _path = " + _path);
+                        if (_path == null) {
+                        	socket.close();
+                        	Log.d(FILE_TEST, "because _path is null, close socket!");
+                        	
+                        	manager.unpair();
+                			Log.d(FILE_TEST, "unpair _path is null!");                		                        
+                        	return;
+                        }
+                        
+                        File target = new File(_path);
                         long fileSize = target.length();
                         Log.d(FILE_TEST, "Send file size : " + fileSize);
 
                         String titleWithPath = target.toString();
+                        Log.d(FILE_TEST, "target toString : " + titleWithPath);
                         String title = "";
                         int i = 0;
 
@@ -370,30 +387,30 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
                             out.println(title);
                             out.flush();
 
-                            DataInputStream dis = new DataInputStream(new FileInputStream(new File(titleWithPath)));
-                            OutputStream dos = new DataOutputStream(socket.getOutputStream());
+                            DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(target)));
+                            OutputStream dos = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
 
                             Log.d(FILE_TEST, "Send file using copyFile");
                             copyFile(dis, dos, fileSize);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }finally{
-                            socket.close();
+                        	 if (socket != null) {
+                                 if (socket.isConnected()) {
+                                     try {
+                                         Log.d(FILE_TEST, "end send file");
+                                         socket.close();
+                                     } catch (IOException e) {
+                                         e.printStackTrace();
+                                     }
+                                 }
+                             }
                         }
                     } // end of client send file
                 } catch (IOException e) {
                     Log.e(FILE_TEST, e.getMessage());
                 } finally {
-                    if (socket != null) {
-                        if (socket.isConnected()) {
-                            try {
-                                Log.d(FILE_TEST, "end send file");
-                                socket.close();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
+                   
                 }
             }
         });
@@ -418,7 +435,7 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 	@Override
 	public void onDeviceDisconnected() {
 		Log.d("TEST", "onDeviceDisconnected");
-		
+		Toast.makeText(getApplicationContext(), "와이파이를 켜주세요!", Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
@@ -426,7 +443,7 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 		Log.d("TEST", "onDevicesDiscovered - count : " + deviceList.size());
 		if(deviceList.size() > 0) {			
 			_device_list = deviceList;
-			clickCenter();	
+			clickCenter();
 		}
 	}
 
@@ -453,14 +470,15 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
                 Log.d(FILE_TEST, "file size : " + size);
                 String filename = in.readLine();
                 Log.d(FILE_TEST, "file name : " + filename);
-                f = new File(Environment.getExternalStorageDirectory() + "/"
-                        + getPackageName() +filename);
+                f = new File(Environment.getExternalStorageDirectory() + "/" +filename);
 
                 File dirs = new File(f.getParent());
                 if (!dirs.exists())
                     dirs.mkdirs();
 
                 f.createNewFile();
+                
+                Log.d(FILE_TEST, "new file path : " + dirs.toString());
 
                 FileOutputStream output = new FileOutputStream(f);
 
@@ -468,6 +486,17 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 
 			} catch (Exception e) {
 				Log.d(FILE_TEST, "Server: error");
+			} finally {
+				 if (client != null) {
+                     if (client.isConnected()) {
+                         try {
+                             Log.d(FILE_TEST, "end send file");
+                             client.close();
+                         } catch (IOException e) {
+                             e.printStackTrace();
+                         }
+                     }
+                 }
 			}
 			return null;
 		}
