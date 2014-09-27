@@ -296,28 +296,18 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 
             @Override
             public void onSocketConnected(Socket socket) {
-                try {
-                    if (info.info.groupFormed && info.info.isGroupOwner) {
-                        Log.d(FILE_TEST, "Server: connection done.");
-                        FileReceiveAsyncTask fileReceiveAsyncTask = new FileReceiveAsyncTask(socket);
-                        fileReceiveAsyncTask.execute();
-                    } else if (info.info.groupFormed) {                    	
-                        Log.d(FILE_TEST, "Client: ready to send message");
+                if (_path == null) {
+				    Log.d(FILE_TEST, "Server: connection done.");
+				    FileReceiveAsyncTask fileReceiveAsyncTask = new FileReceiveAsyncTask(socket);
+				    fileReceiveAsyncTask.execute();
+				} else {                    	
+				    Log.d(FILE_TEST, "Client: ready to send message");
 
-                        Log.d(FILE_TEST, "when socket connected, _path = " + _path);
-                        if (_path == null) {
-                        	socket.close();
-                        	Log.d(FILE_TEST, "because _path is null, close socket!");
-                        	
-                        	return;
-                        }
-                        
-                        FileSendAsyncTask fileSendAsyncTask = new FileSendAsyncTask(socket, _path);
-                        fileSendAsyncTask.execute();
-                    }
-                } catch (IOException e) {
-                    Log.e(FILE_TEST, e.getMessage());
-                }
+				    Log.d(FILE_TEST, "when socket connected, _path = " + _path);                        
+				    
+				    FileSendAsyncTask fileSendAsyncTask = new FileSendAsyncTask(socket, _path);
+				    fileSendAsyncTask.execute();
+				}
             }
         });
 	}
