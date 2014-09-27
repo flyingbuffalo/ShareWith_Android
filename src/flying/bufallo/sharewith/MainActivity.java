@@ -46,6 +46,10 @@ import com.ipaulpro.afilechooser.utils.FileUtils;
 public class MainActivity extends Activity implements WFDDeviceDiscoveredListener, WFDDeviceConnectedListener {
 	
     protected static final int CHOOSE_FILE_RESULT_CODE = 20;
+    
+    protected static final String DEVICE_TYPE_PC_WINDOWS = "1";
+    protected static final String DEVICE_TYPE_ANDROID = "10";
+    
 	final int CENTER_BTN_SIZE = 180;
 
 	public static final String FILE_TEST = "FILE_TEST";
@@ -133,7 +137,7 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 	}
 	
 	public void clickCenter() {
-		// ÆäÀÌµå ¾Æ¿ô ¼¾ÅÍ
+		// ï¿½ï¿½ï¿½Ìµï¿½ ï¿½Æ¿ï¿½ ï¿½ï¿½ï¿½ï¿½
 
 		rotationAnim.setInterpolator(new AccelerateInterpolator());
 		rotationAnim.setStartOffset(0);
@@ -148,7 +152,7 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 		Log.d("TEST ANI", "center x : " + x);
 		Log.d("TEST ANI", "center y : " + y);
 		
-		//ÀÌ¹Ì »ý¼ºµÇ¾ú´ø ¹öÆ°ÀÌ ÀÖÀ¸¸é »èÁ¦ÇÏ°í ¸®½ºÆ® ÃÊ±âÈ­
+		//ï¿½Ì¹ï¿½ ï¿½ï¿½Ç¾ï¿½ï¿½ ï¿½ï¿½Æ°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½ï¿½Æ® ï¿½Ê±ï¿½È­
 		if(isBtnExist){
 			for(int i = 0; i < aniList.size(); i++){
 				main.removeView(findViewById(DYNAMIC_BUTTON_ID+i));
@@ -156,7 +160,7 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 			aniList.clear();
 		}
 		
-		// »ý¼º°ú ÆäÀÌµå ÀÎ ¾Æ¿ôÅÍ
+		// ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ìµï¿½ ï¿½ï¿½ ï¿½Æ¿ï¿½ï¿½ï¿½
 		for(int i = 0; i < _device_list.size(); i++) {
 			double circle_x = x + (x-100)*Math.cos(Math.toRadians((360/_device_list.size())*i));
 			double circle_y = y + (x-100)*Math.sin(Math.toRadians((360/_device_list.size())*i));
@@ -168,7 +172,7 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 		startFadeIn();
 	}
 	
-	//setText·Î ±â±â Á¤º¸ ¼³Á¤..?
+	//setTextï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½..?
 	public void setInformation(final int index){
 
 		btnCenter.setVisibility(View.GONE);
@@ -177,7 +181,7 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 		
 		_device_index = index;
 		
-		//±â±â Á¤º¸ Å¬¸¯ÇÏ¸é afilechooser
+		//ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½Ï¸ï¿½ afilechooser
 		textCenter.setOnClickListener(new OnClickListener() {
 			
 			@Override
@@ -199,15 +203,30 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 		
 	}
 	
-	// ¿ø À§Ä¡¿¡ ±×¸®°í ¾Ö´Ï¸ÞÀÌ¼Ç + ºä = > ¾Ö´Ï¸ÞÀÌÅÍ¸¦ ¸¸µé°í ÀúÀå
+	// ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½×¸ï¿½ï¿½ï¿½ ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½ + ï¿½ï¿½ = > ï¿½Ö´Ï¸ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	public void createdCircle(double x, double y, final int index) {
 		final View child = new View(getApplicationContext());
-		child.setBackground(getResources().getDrawable(R.drawable.btn_android));		
+		String deviceType = _device_list.get(index).device.primaryDeviceType;
+		String deType[] = deviceType.split("-");
+		Log.d("TEST_TYPE", "device : "+deType[0]);
+		Log.d("TEST_TYPE", "DW : "+DEVICE_TYPE_PC_WINDOWS);
+		Log.d("TEST_TYPE", "DA : "+DEVICE_TYPE_ANDROID);
+		
+		
+		//select resources by device type
+		if(DEVICE_TYPE_PC_WINDOWS.equals(deType[0])){
+			child.setBackground(getResources().getDrawable(R.drawable.btn_com));
+		}else if(DEVICE_TYPE_ANDROID.equals(deType[0])){
+			child.setBackground(getResources().getDrawable(R.drawable.btn_android));
+		}else{
+			child.setBackground(getResources().getDrawable(R.drawable.btn_unknown));
+		}
 		child.setX((float) x);
 		child.setY((float) y);
 		child.setVisibility(View.GONE);
 		
-		//µ¿Àû »ý¼ºµÈ ¹öÆ°ÀÇ ID ¼³Á¤
+		Log.d("TEST_TYPE", "Device type : "+_device_list.get(index).device.primaryDeviceType);
+		//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½Æ°ï¿½ï¿½ ID ï¿½ï¿½ï¿½ï¿½
 		child.setId(DYNAMIC_BUTTON_ID+index);
 		
 		Log.d("TEST ANI", "index is  " + index);	
@@ -265,7 +284,7 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 		main.addView(child, 100, 100);				
 	}
 	
-	// ¾Ö´Ï¸ÞÀÌÅÍ ¸®½ºÆ®¿¡¼­ ¼øÂ÷ÀûÀ¸·Î ¾Ö´Ï¸ÞÀÌ¼ÇÀÇ ¼ø¼­¸¦ Á¤ÇØÁÜ. ±×¸®°í ½ÃÀÛ.
+	// ï¿½Ö´Ï¸ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½. ï¿½×¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
 	public void startFadeIn() {
 		if(1 == aniList.size()){
 			animatorSet.play(aniList.get(0));
@@ -313,22 +332,22 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 	 public static boolean copyFile(InputStream inputStream, OutputStream out) {
 		 byte buf[] = new byte[1024*1024];
 		 int len;
-		 Log.d("Ä«ÇÇÆÄÀÏ", "Ä«ÇÇÆÄÀÏ");
+		 Log.d("Ä«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½", "Ä«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½");
 		 try {
 			 int i = 0;
 			 while ((len = inputStream.read(buf)) != -1) {
 				 out.write(buf, 0, len);
-				 Log.d("Ä«ÇÇÆÄÀÏ ¸î¹ø?",""+i++);
+				 Log.d("Ä«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½?",""+i++);
 			 }
 			 out.close();
 			 inputStream.close();
 		 } catch (IOException e) {
 			 Log.d(FILE_TEST, e.toString());
-			 Log.d("Ä«ÇÇÆÄÀÏ³¡", "½ÇÆÐ");
+			 Log.d("Ä«ï¿½ï¿½ï¿½ï¿½ï¿½Ï³ï¿½", "ï¿½ï¿½ï¿½ï¿½");
 			 return false;
 		 }
 		  
-		 Log.d("Ä«ÇÇÆÄÀÏ³¡", "¼º°ø");
+		 Log.d("Ä«ï¿½ï¿½ï¿½ï¿½ï¿½Ï³ï¿½", "ï¿½ï¿½ï¿½ï¿½");
 		 return true;
 	 }
 
