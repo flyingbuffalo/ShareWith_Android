@@ -306,8 +306,8 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 		super.onActivityResult(requestCode, resultCode, data);
 	}
 	
-	 public static boolean copyFile(InputStream inputStream, OutputStream out, long size) {
-		 byte buf[] = new byte[1024];
+	 public static boolean copyFile(InputStream inputStream, DataOutputStream out) {
+		 byte buf[] = new byte[1024*8];
 		 int len;
 		 Log.d(FILE_TEST, "Start copy file");
 		 
@@ -387,11 +387,11 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
                             out.println(title);
                             out.flush();
 
-                            DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(target)));
-                            OutputStream dos = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+                            DataInputStream dis = new DataInputStream(new FileInputStream(target));
+                            DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
 
                             Log.d(FILE_TEST, "Send file using copyFile");
-                            copyFile(dis, dos, fileSize);
+                            copyFile(dis, dos);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }finally{
@@ -470,19 +470,22 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
                 Log.d(FILE_TEST, "file size : " + size);
                 String filename = in.readLine();
                 Log.d(FILE_TEST, "file name : " + filename);
-                f = new File(Environment.getExternalStorageDirectory() + "/" +filename);
+                f = new File(Environment.getExternalStorageDirectory() + "/sharewith/" +filename);
 
                 File dirs = new File(f.getParent());
                 if (!dirs.exists())
                     dirs.mkdirs();
-
+                
+                if(f.exists())
+                    f.delete();
+                
                 f.createNewFile();
                 
                 Log.d(FILE_TEST, "new file path : " + dirs.toString());
 
-                FileOutputStream output = new FileOutputStream(f);
+                DataOutputStream output = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(f)));
 
-                copyFile(client.getInputStream(), output, size);
+                copyFile(new BufferedInputStream(client.getInputStream()), output);
 
 			} catch (Exception e) {
 				Log.d(FILE_TEST, "Server: error");
