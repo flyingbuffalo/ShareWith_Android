@@ -70,6 +70,7 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 	List<WFDDevice> _device_list = new ArrayList<WFDDevice>();
 	String _path = null;
 	private int _device_index = -1;
+	private boolean READY_FILE_SEND = false;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -271,6 +272,7 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 						WFDDevice device = _device_list.get(_device_index);
 
 						if(device != null) {
+							READY_FILE_SEND = true;		// file send flag
 							manager.pairAsync(device);
 						}
 					}
@@ -296,7 +298,7 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 
             @Override
             public void onSocketConnected(Socket socket) {
-                if (_path == null) {
+                if (!READY_FILE_SEND && _path == null) {
 				    Log.d(FILE_TEST, "Server: connection done.");
 				    FileReceiveAsyncTask fileReceiveAsyncTask = new FileReceiveAsyncTask(socket);
 				    fileReceiveAsyncTask.execute();
@@ -307,6 +309,8 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 				    
 				    FileSendAsyncTask fileSendAsyncTask = new FileSendAsyncTask(socket, _path);
 				    fileSendAsyncTask.execute();
+				    
+				    READY_FILE_SEND = false;
 				}
             }
         });
