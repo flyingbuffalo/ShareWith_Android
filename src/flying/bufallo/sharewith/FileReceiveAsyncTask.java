@@ -50,8 +50,9 @@ public class FileReceiveAsyncTask extends AsyncTask<Void,Void,Void> {
 			Log.d(MainActivity.FILE_TEST, "Server: error\n" + e.toString());
 		} finally {
 			if(client != null) {
-				if(client.isClosed()) {
+				if(client.isConnected()) {
 					try {
+						Log.d("TEST", "client.close");
 						client.close();
 					} catch (IOException e) {
 						e.printStackTrace();

@@ -104,7 +104,13 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 			
 			@Override
 			public void onClick(View v) {
-				Log.d("TEST ANI", "click center");                
+				Log.d("TEST ANI", "click center");   
+				
+				if(manager.mydevice.device.status != WifiP2pDevice.AVAILABLE){
+					Log.d("TEST", "unpair");
+					manager.unpair();
+				}
+				
 				manager.getDevicesAsync();
 				
 				rotationAnim.setInterpolator(new AccelerateInterpolator());
@@ -132,6 +138,7 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 	// START ANIMATION BLOCK
 	
 	public void clickCenter() {
+		
 		rotationAnim.setInterpolator(new AccelerateInterpolator());
 		rotationAnim.setStartOffset(0);
 		rotationAnim.setDuration(2000);
@@ -272,6 +279,7 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 						WFDDevice device = _device_list.get(_device_index);
 
 						if(device != null) {
+							Log.d("TEST FILE", "Device !null");
 							READY_FILE_SEND = true;		// file send flag
 							manager.pairAsync(device);
 						}
@@ -335,14 +343,19 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 					switch (manager.mydevice.device.status) {
 		            case WifiP2pDevice.AVAILABLE:
 		            	status = "Available";
+		            	break;
 		            case WifiP2pDevice.INVITED:
 		            	status = "Invited";
+		            	break;
 		            case WifiP2pDevice.CONNECTED:
 		            	status = "Connected";
+		            	break;
 		            case WifiP2pDevice.FAILED:
 		            	status = "Failed";
+		            	break;
 		            case WifiP2pDevice.UNAVAILABLE:
 		            	status = "Unavailable";
+		            	break;
 		            default:
 		            	status = "Unknown";
 					}
