@@ -33,9 +33,16 @@
         android:layout_centerHorizontal="true"
         android:src="@drawable/btn_share" />
     
-    
     <include
         android:id="@+id/include"
         layout="@layout/actionbar" />
+
+    <TextView
+        android:id="@+id/my_device_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/include"
+        android:text="start state" />
 
 </RelativeLayout>

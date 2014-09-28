@@ -1,13 +1,8 @@
 package flying.bufallo.sharewith;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,14 +15,13 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
+import android.net.wifi.p2p.WifiP2pDevice;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.animation.AccelerateInterpolator;
-import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
@@ -43,8 +37,8 @@ import com.flyingbuffalo.wfdmanager.WFDPairInfo.PairSocketConnectedListener;
 import com.flyingbuffalo.wfdmanager.WFDPairInfo;
 import com.ipaulpro.afilechooser.utils.FileUtils;
 
-public class MainActivity extends Activity implements WFDDeviceDiscoveredListener, WFDDeviceConnectedListener {
-	
+public class MainActivity extends Activity implements WFDDeviceDiscoveredListener, WFDDeviceConnectedListener {	
+
     protected static final int CHOOSE_FILE_RESULT_CODE = 20;
     
     protected static final String DEVICE_TYPE_PC_WINDOWS = "1";
@@ -53,7 +47,12 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 	final int CENTER_BTN_SIZE = 180;
 
 	public static final String FILE_TEST = "FILE_TEST";
+	public static final String LISTENER = "LISTENER";
+	public static final String ANI = "ANI";
+	
 	public final String DEVICE_INDEX = "device_index";
+	
+	final Animation rotationAnim = new RotateAnimation(0, 360, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
 
 	final int DYNAMIC_BUTTON_ID = 0x8000;
 	
@@ -62,10 +61,7 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 	
 	float btnSize;
 	
-	boolean isBtnExist = false;
-	
-	final Animation rotationAnim = new RotateAnimation(0, 360, Animation.RELATIVE_TO_SELF, 0.5f, 
-			Animation.RELATIVE_TO_SELF, 0.5f);
+	boolean isBtnExist = false;	
 	
 	RelativeLayout main;
 	TextView textCenter;
@@ -78,6 +74,7 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 	List<WFDDevice> _device_list = new ArrayList<WFDDevice>();
 	String _path = null;
 	private int _device_index = -1;
+	private boolean READY_FILE_SEND = false;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -94,16 +91,12 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
         dpHeight = displayMetrics.heightPixels / displayMetrics.density;
         dpWidth = displayMetrics.widthPixels / displayMetrics.density;
         
-		/*This is for test*/
-
+		/** This is for test **/
 		Log.d("TEST DISPLAY", "height : "+displayMetrics.heightPixels+" width : "+displayMetrics.widthPixels);
-		Log.d("TEST DISPLAY", "dpheight : "+dpHeight+" dpwidth : "+dpWidth);
-
+		Log.d("TEST DISPLAY", "dpheight : "+dpHeight+" dpwidth : "+dpWidth);		
+		/** delete it after you use **/       		
 		
-		/*delete it after you use*/       
-		
-		
-		//size of button is 1/5 scale of device width
+		// size of button is 1/5 scale of device width
 		btnSize = (float) (displayMetrics.widthPixels*0.2);
 		Log.d("TEST SCALE", "Size : "+btnSize); 
 		float btnScale = btnSize / displayMetrics.density / CENTER_BTN_SIZE;
@@ -115,9 +108,20 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 			
 			@Override
 			public void onClick(View v) {
-				Log.d("TEST ANI", "click center");
-				manager.getDevicesAsync();		
-			}
+				Log.d("TEST ANI", "click center");   
+				
+				if(manager.mydevice.device.status != WifiP2pDevice.AVAILABLE){
+					Log.d("TEST", "unpair");
+					manager.unpair();
+				}
+				
+				manager.getDevicesAsync();
+				
+				rotationAnim.setInterpolator(new AccelerateInterpolator());
+				rotationAnim.setStartOffset(0);
+				rotationAnim.setDuration(2000);
+				btnCenter.startAnimation(rotationAnim);
+            }
 		});
 		
 		
@@ -136,23 +140,20 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 		manager.unregisterReceiver();
 	}
 	
-	public void clickCenter() {
-		// ���̵� �ƿ� ����
-
+	// START ANIMATION BLOCK
+	
+	public void clickCenter() {		
 		rotationAnim.setInterpolator(new AccelerateInterpolator());
 		rotationAnim.setStartOffset(0);
 		rotationAnim.setDuration(2000);
-		btnCenter.startAnimation(rotationAnim);
-		
+		btnCenter.startAnimation(rotationAnim);		
 		
 		float x = (float) (btnCenter.getX()+btnSize);
 		float y = (float) (btnCenter.getY()+btnSize);
-		
-		
+				
 		Log.d("TEST ANI", "center x : " + x);
 		Log.d("TEST ANI", "center y : " + y);
 		
-		//�̹� ��Ǿ�� ��ư�� ������ �����ϰ� ����Ʈ �ʱ�ȭ
 		if(isBtnExist){
 			for(int i = 0; i < aniList.size(); i++){
 				main.removeView(findViewById(DYNAMIC_BUTTON_ID+i));
@@ -160,7 +161,6 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 			aniList.clear();
 		}
 		
-		// ��� ���̵� �� �ƿ���
 		for(int i = 0; i < _device_list.size(); i++) {
 			double circle_x = x + (x-100)*Math.cos(Math.toRadians((360/_device_list.size())*i));
 			double circle_y = y + (x-100)*Math.sin(Math.toRadians((360/_device_list.size())*i));
@@ -171,39 +171,7 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 		}		
 		startFadeIn();
 	}
-	
-	//setText�� ��� ���� ����..?
-	public void setInformation(final int index){
 
-		btnCenter.setVisibility(View.GONE);
-		textCenter.setText(_device_list.get(index).device.deviceName);
-		textCenter.setVisibility(View.VISIBLE);
-		
-		_device_index = index;
-		
-		//��� ���� Ŭ���ϸ� afilechooser
-		textCenter.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-			       Intent target = FileUtils.createGetContentIntent();
-                   // Create the chooser Intent
-                   Intent intent = Intent.createChooser(
-                           target, "aFileChooser");
-                   intent.putExtra(DEVICE_INDEX, index);
-                   Log.d(FILE_TEST, "Click index!!! " + index);
-                   try {
-                	   startActivityForResult(intent, CHOOSE_FILE_RESULT_CODE);
-                   } catch (ActivityNotFoundException e) {
-                       // The reason for the existence of aFileChooser
-                   }
-			}
-		});
-		
-	}
-	
-	// �� ��ġ�� �׸��� �ִϸ��̼� + �� = > �ִϸ����͸� ����� ����
 	public void createdCircle(double x, double y, final int index) {
 		final View child = new View(getApplicationContext());
 		String deviceType = _device_list.get(index).device.primaryDeviceType;
@@ -225,11 +193,7 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 		child.setY((float) y);
 		child.setVisibility(View.GONE);
 		
-		Log.d("TEST_TYPE", "Device type : "+_device_list.get(index).device.primaryDeviceType);
-		//���� ��� ��ư�� ID ����
 		child.setId(DYNAMIC_BUTTON_ID+index);
-		
-		Log.d("TEST ANI", "index is  " + index);	
 		
 		child.setOnClickListener(new OnClickListener() {
 			
@@ -253,8 +217,7 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 		
 		ObjectAnimator alphaAnimation = ObjectAnimator.ofFloat(child, View.ALPHA, 0,1);
 		alphaAnimation.setDuration(1000);
-		alphaAnimation.addListener(new AnimatorListener() {
-			
+		alphaAnimation.addListener(new AnimatorListener() {			
 			@Override
 			public void onAnimationStart(Animator animation) {
 				child.setVisibility(View.VISIBLE);		
@@ -263,32 +226,55 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 			
 			@Override
 			public void onAnimationRepeat(Animator animation) {
-				// TODO Auto-generated method stub
-				
 			}
 			
 			@Override
 			public void onAnimationEnd(Animator animation) {
-				//child.setVisibility(View.GONE);
-				
+
 			}
 			
 			@Override
 			public void onAnimationCancel(Animator animation) {
-				// TODO Auto-generated method stub
-				
 			}
 		});
 		
 		aniList.add(alphaAnimation);	
 		main.addView(child, 100, 100);				
 	}
+		
+	public void setInformation(final int index){
+		
+		btnCenter.setVisibility(View.GONE);
+		
+		textCenter.setText(_device_list.get(index).device.deviceName);
+		textCenter.setVisibility(View.VISIBLE);
+		
+		_device_index = index;
+		
+		textCenter.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				Intent target = FileUtils.createGetContentIntent();
+				// Create the chooser Intent
+				Intent intent = Intent.createChooser(
+						target, "aFileChooser");
+				intent.putExtra(DEVICE_INDEX, index);
+				Log.d(FILE_TEST, "Click index!!! " + index);
+				try {
+					startActivityForResult(intent, CHOOSE_FILE_RESULT_CODE);
+				} catch (ActivityNotFoundException e) {
+					// The reason for the existence of aFileChooser
+				}
+			}
+		});
+		
+	}
 	
-	// �ִϸ����� ����Ʈ���� ���������� �ִϸ��̼��� �� ������. �׸��� ����.
 	public void startFadeIn() {
-		if(1 == aniList.size()){
+		if(1 == aniList.size()) {
 			animatorSet.play(aniList.get(0));
-		}else if(0 != aniList.size()){
+		} else if(0 != aniList.size()) {
 			for(int i = 0; i < aniList.size() - 1; i++) {
 				animatorSet.play(aniList.get(i)).before(aniList.get(i+1));
 			}
@@ -297,6 +283,8 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 		animatorSet.start();
 		isBtnExist = true;
 	}
+	
+	// END ANIMATION BLOCK
 	
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -313,13 +301,15 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
                             Toast.makeText(this,
                                     "File Selected: " + _path, Toast.LENGTH_LONG).show();
                         } catch (Exception e) {
-                            Log.e("FileSelectorTestActivity", "File select error", e);
+                            Log.e(FILE_TEST, "File select error", e);
                         }
 						
 						Log.d(FILE_TEST, "device index : " + _device_index);
 						WFDDevice device = _device_list.get(_device_index);
-						
+
 						if(device != null) {
+							Log.d("TEST FILE", "Device !null");
+							READY_FILE_SEND = true;		// file send flag
 							manager.pairAsync(device);
 						}											
 					}
@@ -327,110 +317,119 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 				break;
 		}
 		super.onActivityResult(requestCode, resultCode, data);
+	}	
+		
+	@Override
+	public void onDevicesDiscovered(List<WFDDevice> deviceList) {
+		Log.d(LISTENER, "onDevicesDiscovered - count : " + deviceList.size());
+		if(deviceList.size() > 0) {			
+			_device_list = deviceList;
+			clickCenter();
+		}
+	}
+
+	@Override
+	public void onDeviceConnected(final WFDPairInfo info) {
+		Log.d(LISTENER, "called onDeviceConnected");		
+		info.connectSocketAsync(new PairSocketConnectedListener() {
+
+            @Override
+            public void onSocketConnected(Socket socket) {
+                if (!READY_FILE_SEND && _path == null) {
+				    Log.d(FILE_TEST, "Server: connection done.");
+				    FileReceiveAsyncTask fileReceiveAsyncTask = new FileReceiveAsyncTask(socket);
+				    fileReceiveAsyncTask.run();
+				} else {                    	
+				    Log.d(FILE_TEST, "Client: ready to send message");
+
+				    Log.d(FILE_TEST, "when socket connected, _path = " + _path);                        
+				    
+				    FileSendAsyncTask fileSendAsyncTask = new FileSendAsyncTask(socket, _path);
+				    fileSendAsyncTask.run();
+				    
+				    READY_FILE_SEND = false;
+				}
+            }
+        });
 	}
 	
-	 public static boolean copyFile(InputStream inputStream, OutputStream out) {
+	@Override
+	public void onDeviceConnectFailed(int reasonCode) {
+		
+		switch (reasonCode) {
+			case WFDManager.CHANNEL_LOST:
+				Log.d(LISTENER, "Channel lost");
+				break;
+			case WFDManager.DEVICES_RESET:
+				Log.d(LISTENER, "Device list need to reset");
+				manager.getDevicesAsync();
+				break;
+			case WFDManager.UPDATE_THIS_DEVICE:
+				Log.d(LISTENER, "Change this device status ex)connected");
+				TextView myDeviceStatus = (TextView) findViewById(R.id.my_device_status);
+				if(manager.mydevice != null) {
+					String status = "none";
+					switch (manager.mydevice.device.status) {
+		            case WifiP2pDevice.AVAILABLE:
+		            	status = "Available";
+		            	break;
+		            case WifiP2pDevice.INVITED:
+		            	status = "Invited";
+		            	break;
+		            case WifiP2pDevice.CONNECTED:
+		            	status = "Connected";
+		            	break;
+		            case WifiP2pDevice.FAILED:
+		            	status = "Failed";
+		            	break;
+		            case WifiP2pDevice.UNAVAILABLE:
+		            	status = "Unavailable";
+		            	break;
+		            default:
+		            	status = "Unknown";
+					}
+					myDeviceStatus.setText(status);
+				}
+				
+				break;
+			case WFDManager.WFD_DISABLED:
+				Log.d(LISTENER, "Wifi is off");
+				break;
+	
+			default:
+				break;
+		}		
+	}
+	
+	@Override
+	public void onDevicesDiscoverFailed(int reasonCode) {
+		Log.d(LISTENER, "onDevicesDiscoverFailed");
+	}
+	
+	@Override
+	public void onDeviceDisconnected() {
+		Log.d(LISTENER, "onDeviceDisconnected");
+	}
+	
+	public static boolean copyFile(InputStream inputStream, OutputStream out) {
 		 byte buf[] = new byte[1024*1024];
 		 int len;
-		 Log.d("ī������", "ī������");
+		 Log.d(FILE_TEST, "Start copy file");
+		 
 		 try {
 			 int i = 0;
 			 while ((len = inputStream.read(buf)) != -1) {
 				 out.write(buf, 0, len);
-				 Log.d("ī������ ���?",""+i++);
+				 Log.d(FILE_TEST, "copy buffer times = " + i++ + "and len = " + len);
 			 }
 			 out.close();
 			 inputStream.close();
 		 } catch (IOException e) {
 			 Log.d(FILE_TEST, e.toString());
-			 Log.d("ī�����ϳ�", "����");
 			 return false;
 		 }
 		  
-		 Log.d("ī�����ϳ�", "����");
+		 Log.d(FILE_TEST, "End of copy file");
 		 return true;
-	 }
-
-	@Override
-	public void onDeviceConnected(final WFDPairInfo info) {
-		
-		info.connectSocketAsync(new PairSocketConnectedListener() {
-			
-			@Override
-			public void onSocketConnected(Socket s) {
-				try{
-					if (info.info.groupFormed && info.info.isGroupOwner) {
-						Log.d("TEST", "Server: connection done");
-						MessageAsyncTask m = new MessageAsyncTask(s);
-						m.execute();
-					} else if (info.info.groupFormed) {
-						Log.d("TEST", "Client: ready to send message");
-						while (true) {
-							BufferedWriter w = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
-							PrintWriter out = new PrintWriter(w, true);
-		                    String return_msg = "PING";
-		                    out.println(return_msg);
-		                    Log.d("TEST", "result :" + return_msg);
-		                    
-		                    Thread.sleep(1000);
-						}
-					}
-				} catch(IOException e) {
-					Log.e("TEST ERROR", e.getMessage());
-				} catch (InterruptedException e) {					
-					e.printStackTrace();
-				}
-			}
-		});			
-	}
-
-	@Override
-	public void onDeviceConnectFailed(int reasonCode) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onDeviceDisconnected() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onDevicesDiscovered(List<WFDDevice> deviceList) {
-		Log.d("TEST", "onDevicesDiscovered - count : " + deviceList.size());
-		if(deviceList.size() > 0) {			
-			_device_list = deviceList;
-			clickCenter();	
-		}		
-	}
-
-	@Override
-	public void onDevicesDiscoverFailed(int reasonCode) {
-		// TODO Auto-generated method stub
-		
-	}
-	
-	public class MessageAsyncTask extends AsyncTask<Void,Void,Void> {
-		private Socket client = null;
-		
-		public MessageAsyncTask(Socket s) {
-			client = s;
-		}
-		
-		@Override
-		protected Void doInBackground(Void... params) {
-			try {
-				while(true) {
-					BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-                    String str = in.readLine();
-                    Log.d(FILE_TEST,"S: Received: '" + str + "'");
-				}
-			} catch (Exception e) {
-				Log.d(FILE_TEST, "Server: error");
-			}
-			return null;
-		}
-		
 	}
 }
