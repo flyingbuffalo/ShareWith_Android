@@ -384,7 +384,7 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 	}
 	
 	public static boolean copyFile(InputStream inputStream, OutputStream out) {
-		 byte buf[] = new byte[1024*8];
+		 byte buf[] = new byte[1024*1024];
 		 int len;
 		 Log.d(FILE_TEST, "Start copy file");
 		 

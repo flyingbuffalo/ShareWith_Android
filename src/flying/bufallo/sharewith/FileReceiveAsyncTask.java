@@ -35,8 +35,8 @@ public class FileReceiveAsyncTask extends AsyncTask<Void,Void,Void> {
             if (!dirs.exists())
                 dirs.mkdirs();
             
-            if(f.exists())
-                f.delete();
+//            if(f.exists())
+//                f.delete();
             
             f.createNewFile();
             
