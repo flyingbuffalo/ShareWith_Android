@@ -11,7 +11,7 @@ import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
 
-public class FileReceiveAsyncTask extends AsyncTask<Void,Void,Void> {
+public class FileReceiveAsyncTask extends Thread {
 
 	private Socket client = null;
 	
@@ -20,7 +20,7 @@ public class FileReceiveAsyncTask extends AsyncTask<Void,Void,Void> {
 	}
 	
 	@Override
-	protected Void doInBackground(Void... params) {
+	public void run() {
 		File f = null;
         try {
             Log.d(MainActivity.FILE_TEST, "Receiver : ready to receive");
@@ -60,7 +60,6 @@ public class FileReceiveAsyncTask extends AsyncTask<Void,Void,Void> {
 				}
 			}
 		}
-		return null;
-	} // end of doInBackground
+	} // end of run
 
 }

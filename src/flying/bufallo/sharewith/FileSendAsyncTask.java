@@ -12,7 +12,7 @@ import java.net.Socket;
 import android.os.AsyncTask;
 import android.util.Log;
 
-public class FileSendAsyncTask extends AsyncTask<Void,Void,Void> {
+public class FileSendAsyncTask extends Thread {
 	private Socket socket = null;
 	private String path = null;
 	
@@ -22,7 +22,7 @@ public class FileSendAsyncTask extends AsyncTask<Void,Void,Void> {
 	}
 	
 	@Override
-	protected Void doInBackground(Void... params) {		        
+	public void run() {		        
         File target = new File(path);
         long fileSize = target.length();
         Log.d(MainActivity.FILE_TEST, "FileSendAsyncTask : Send file size : " + fileSize);
@@ -74,8 +74,7 @@ public class FileSendAsyncTask extends AsyncTask<Void,Void,Void> {
                  }
              }
         }
-		return null;
    
-	} // end of doInBackground
+	} // end of run
 
 }

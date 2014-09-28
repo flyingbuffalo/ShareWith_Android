@@ -309,14 +309,14 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
                 if (!READY_FILE_SEND && _path == null) {
 				    Log.d(FILE_TEST, "Server: connection done.");
 				    FileReceiveAsyncTask fileReceiveAsyncTask = new FileReceiveAsyncTask(socket);
-				    fileReceiveAsyncTask.execute();
+				    fileReceiveAsyncTask.run();
 				} else {                    	
 				    Log.d(FILE_TEST, "Client: ready to send message");
 
 				    Log.d(FILE_TEST, "when socket connected, _path = " + _path);                        
 				    
 				    FileSendAsyncTask fileSendAsyncTask = new FileSendAsyncTask(socket, _path);
-				    fileSendAsyncTask.execute();
+				    fileSendAsyncTask.run();
 				    
 				    READY_FILE_SEND = false;
 				}
