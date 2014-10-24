@@ -1,8 +1,5 @@
 package flying.bufallo.sharewith;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +34,10 @@ import com.flyingbuffalo.wfdmanager.WFDPairInfo.PairSocketConnectedListener;
 import com.flyingbuffalo.wfdmanager.WFDPairInfo;
 import com.ipaulpro.afilechooser.utils.FileUtils;
 
-public class MainActivity extends Activity implements WFDDeviceDiscoveredListener, WFDDeviceConnectedListener {	
+import flying.bufallo.asynctask.FileReceiveAsyncTask;
+import flying.bufallo.asynctask.FileSendAsyncTask;
+
+public class MainActivity extends Activity {	
 
     protected static final int CHOOSE_FILE_RESULT_CODE = 20;
     
@@ -125,7 +125,7 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 		});
 		
 		
-		manager = new WFDManager(getApplicationContext(),this, this);
+		manager = new WFDManager(getApplicationContext(), discoverdListener, connectedListener);
 	}
 	
 	@Override
@@ -209,7 +209,6 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 			
 			@Override
 			public void onClick(View arg0) {
-				// TODO Auto-generated method stub
 				Toast.makeText(getApplicationContext(), "Clicked!", Toast.LENGTH_SHORT).show();
 				
 			}
@@ -318,118 +317,103 @@ public class MainActivity extends Activity implements WFDDeviceDiscoveredListene
 		}
 		super.onActivityResult(requestCode, resultCode, data);
 	}	
+	
+	WFDDeviceDiscoveredListener discoverdListener = new WFDDeviceDiscoveredListener() {
 		
-	@Override
-	public void onDevicesDiscovered(List<WFDDevice> deviceList) {
-		Log.d(LISTENER, "onDevicesDiscovered - count : " + deviceList.size());
-		if(deviceList.size() > 0) {			
-			_device_list = deviceList;
-			clickCenter();
+		@Override
+		public void onDevicesDiscovered(List<WFDDevice> deviceList) {
+			Log.d(LISTENER, "onDevicesDiscovered - count : " + deviceList.size());
+			if(deviceList.size() > 0) {			
+				_device_list = deviceList;
+				clickCenter();
+			}
 		}
-	}
-
-	@Override
-	public void onDeviceConnected(final WFDPairInfo info) {
-		Log.d(LISTENER, "called onDeviceConnected");		
-		info.connectSocketAsync(new PairSocketConnectedListener() {
-
-            @Override
-            public void onSocketConnected(Socket socket) {
-                if (!READY_FILE_SEND && _path == null) {
-				    Log.d(FILE_TEST, "Server: connection done.");
-				    FileReceiveAsyncTask fileReceiveAsyncTask = new FileReceiveAsyncTask(socket);
-				    fileReceiveAsyncTask.run();
-				} else {                    	
-				    Log.d(FILE_TEST, "Client: ready to send message");
-
-				    Log.d(FILE_TEST, "when socket connected, _path = " + _path);                        
-				    
-				    FileSendAsyncTask fileSendAsyncTask = new FileSendAsyncTask(socket, _path);
-				    fileSendAsyncTask.run();
-				    
-				    READY_FILE_SEND = false;
-				}
-            }
-        });
-	}
-	
-	@Override
-	public void onDeviceConnectFailed(int reasonCode) {
 		
-		switch (reasonCode) {
-			case WFDManager.CHANNEL_LOST:
-				Log.d(LISTENER, "Channel lost");
-				break;
-			case WFDManager.DEVICES_RESET:
-				Log.d(LISTENER, "Device list need to reset");
-				manager.getDevicesAsync();
-				break;
-			case WFDManager.UPDATE_THIS_DEVICE:
-				Log.d(LISTENER, "Change this device status ex)connected");
-				TextView myDeviceStatus = (TextView) findViewById(R.id.my_device_status);
-				if(manager.mydevice != null) {
-					String status = "none";
-					switch (manager.mydevice.device.status) {
-		            case WifiP2pDevice.AVAILABLE:
-		            	status = "Available";
-		            	break;
-		            case WifiP2pDevice.INVITED:
-		            	status = "Invited";
-		            	break;
-		            case WifiP2pDevice.CONNECTED:
-		            	status = "Connected";
-		            	break;
-		            case WifiP2pDevice.FAILED:
-		            	status = "Failed";
-		            	break;
-		            case WifiP2pDevice.UNAVAILABLE:
-		            	status = "Unavailable";
-		            	break;
-		            default:
-		            	status = "Unknown";
+		@Override
+		public void onDevicesDiscoverFailed(int reasonCode) {
+			Log.d(LISTENER, "onDevicesDiscoverFailed");
+		}
+	};
+	
+	WFDDeviceConnectedListener connectedListener = new WFDDeviceConnectedListener() {
+		
+		@Override
+		public void onDeviceDisconnected() {
+			Log.d(LISTENER, "onDeviceDisconnected");
+		}
+		
+		@Override
+		public void onDeviceConnected(final WFDPairInfo info) {
+			Log.d(LISTENER, "called onDeviceConnected");		
+			info.connectSocketAsync(new PairSocketConnectedListener() {
+
+	            @Override
+	            public void onSocketConnected(Socket socket) {
+	                if (!READY_FILE_SEND && _path == null) {
+					    Log.d(FILE_TEST, "Server: connection done.");
+					    FileReceiveAsyncTask fileReceiveAsyncTask = new FileReceiveAsyncTask(socket);
+					    fileReceiveAsyncTask.run();
+					} else {                    	
+					    Log.d(FILE_TEST, "Client: ready to send message");
+
+					    Log.d(FILE_TEST, "when socket connected, _path = " + _path);                        
+					    
+					    FileSendAsyncTask fileSendAsyncTask = new FileSendAsyncTask(socket, _path);
+					    fileSendAsyncTask.run();
+					    
+					    READY_FILE_SEND = false;
 					}
-					myDeviceStatus.setText(status);
-				}
-				
-				break;
-			case WFDManager.WFD_DISABLED:
-				Log.d(LISTENER, "Wifi is off");
-				break;
+	            }
+	        });
+		}
+		
+		@Override
+		public void onDeviceConnectFailed(int reasonCode) {
+			
+			switch (reasonCode) {
+				case WFDManager.CHANNEL_LOST:
+					Log.d(LISTENER, "Channel lost");
+					break;
+				case WFDManager.DEVICES_RESET:
+					Log.d(LISTENER, "Device list need to reset");
+					manager.getDevicesAsync();
+					break;
+				case WFDManager.UPDATE_THIS_DEVICE:
+					Log.d(LISTENER, "Change this device status ex)connected");
+					TextView myDeviceStatus = (TextView) findViewById(R.id.my_device_status);
+					if(manager.mydevice != null) {
+						String status = "none";
+						switch (manager.mydevice.device.status) {
+			            case WifiP2pDevice.AVAILABLE:
+			            	status = "Available";
+			            	break;
+			            case WifiP2pDevice.INVITED:
+			            	status = "Invited";
+			            	break;
+			            case WifiP2pDevice.CONNECTED:
+			            	status = "Connected";
+			            	break;
+			            case WifiP2pDevice.FAILED:
+			            	status = "Failed";
+			            	break;
+			            case WifiP2pDevice.UNAVAILABLE:
+			            	status = "Unavailable";
+			            	break;
+			            default:
+			            	status = "Unknown";
+						}
+						myDeviceStatus.setText(status);
+					}
+					
+					break;
+				case WFDManager.WFD_DISABLED:
+					Log.d(LISTENER, "Wifi is off");
+					break;
+		
+				default:
+					break;
+			}		
+		}
+	};
 	
-			default:
-				break;
-		}		
-	}
-	
-	@Override
-	public void onDevicesDiscoverFailed(int reasonCode) {
-		Log.d(LISTENER, "onDevicesDiscoverFailed");
-	}
-	
-	@Override
-	public void onDeviceDisconnected() {
-		Log.d(LISTENER, "onDeviceDisconnected");
-	}
-	
-	public static boolean copyFile(InputStream inputStream, OutputStream out) {
-		 byte buf[] = new byte[1024*1024];
-		 int len;
-		 Log.d(FILE_TEST, "Start copy file");
-		 
-		 try {
-			 int i = 0;
-			 while ((len = inputStream.read(buf)) != -1) {
-				 out.write(buf, 0, len);
-				 Log.d(FILE_TEST, "copy buffer times = " + i++ + "and len = " + len);
-			 }
-			 out.close();
-			 inputStream.close();
-		 } catch (IOException e) {
-			 Log.d(FILE_TEST, e.toString());
-			 return false;
-		 }
-		  
-		 Log.d(FILE_TEST, "End of copy file");
-		 return true;
-	}
 }

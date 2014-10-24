@@ -1,4 +1,4 @@
-package flying.bufallo.sharewith;
+package flying.bufallo.asynctask;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 
-import android.os.AsyncTask;
+import flying.bufallo.filestream.FileStreamUtil;
+import flying.bufallo.sharewith.MainActivity;
+
 import android.os.Environment;
 import android.util.Log;
 
@@ -44,7 +46,7 @@ public class FileReceiveAsyncTask extends Thread {
 
             FileOutputStream output = new FileOutputStream(f);
 
-            MainActivity.copyFile(client.getInputStream(), output);
+            FileStreamUtil.copyFile(client.getInputStream(), output);
 
 		} catch (Exception e) {
 			Log.d(MainActivity.FILE_TEST, "Server: error\n" + e.toString());

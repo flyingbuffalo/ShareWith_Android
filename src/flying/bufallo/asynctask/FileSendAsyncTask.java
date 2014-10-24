@@ -1,4 +1,4 @@
-package flying.bufallo.sharewith;
+package flying.bufallo.asynctask;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
@@ -9,7 +9,9 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-import android.os.AsyncTask;
+import flying.bufallo.filestream.FileStreamUtil;
+import flying.bufallo.sharewith.MainActivity;
+
 import android.util.Log;
 
 public class FileSendAsyncTask extends Thread {
@@ -59,7 +61,7 @@ public class FileSendAsyncTask extends Thread {
             BufferedOutputStream bos = new BufferedOutputStream(socket.getOutputStream());
 
             Log.d(MainActivity.FILE_TEST, "Send file using copyFile");
-            MainActivity.copyFile(fis, bos);
+            FileStreamUtil.copyFile(fis, bos);
         } catch (IOException e) {
             e.printStackTrace();
         }finally{
