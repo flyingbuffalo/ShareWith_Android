@@ -362,6 +362,7 @@ public class MainActivity extends Activity {
 					    fileSendAsyncTask.run();
 					    
 					    READY_FILE_SEND = false;
+					    _path = null;
 					}
 	            }
 	        });
