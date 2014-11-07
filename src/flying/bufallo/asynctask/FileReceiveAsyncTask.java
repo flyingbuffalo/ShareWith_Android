@@ -16,9 +16,17 @@ import android.util.Log;
 public class FileReceiveAsyncTask extends Thread {
 
 	private Socket client = null;
+	private ReceiveListner receiveListner;		
 	
-	public FileReceiveAsyncTask(Socket s) {
+	public interface ReceiveListner {
+		public void onSuccess(File f);
+		public void onFail(Exception e);
+		public void onAlreadyExist();
+	}
+	
+	public FileReceiveAsyncTask(Socket s, ReceiveListner l) {
 		client = s;
+		this.receiveListner = l;	
 	}
 	
 	@Override
@@ -32,14 +40,16 @@ public class FileReceiveAsyncTask extends Thread {
             String filename = in.readLine();
             Log.d(MainActivity.FILE_TEST, "file name : " + filename);
             f = new File(Environment.getExternalStorageDirectory() + "/sharewith/" +filename);
-
+                        
             File dirs = new File(f.getParent());
             if (!dirs.exists())
                 dirs.mkdirs();
             
-//            if(f.exists())
-//                f.delete();
-            
+            if(f.exists()) {
+//            	f.delete();
+        		receiveListner.onAlreadyExist();
+            }
+            	                       
             f.createNewFile();
             
             Log.d(MainActivity.FILE_TEST, "new file path : " + dirs.toString());
@@ -47,9 +57,12 @@ public class FileReceiveAsyncTask extends Thread {
             FileOutputStream output = new FileOutputStream(f);
 
             FileStreamUtil.copyFile(client.getInputStream(), output);
+                        
+            receiveListner.onSuccess(f);            
 
 		} catch (Exception e) {
 			Log.d(MainActivity.FILE_TEST, "Server: error\n" + e.toString());
+			receiveListner.onFail(e);			
 		} finally {
 			if(client != null) {
 				if(client.isConnected()) {
@@ -60,7 +73,7 @@ public class FileReceiveAsyncTask extends Thread {
 						e.printStackTrace();
 					}
 				}
-			}
+			}			
 		}
 	} // end of run
 

@@ -17,11 +17,18 @@ import android.util.Log;
 public class FileSendAsyncTask extends Thread {
 	private Socket socket = null;
 	private String path = null;
+	private SendListner sendListner;
+
+	public interface SendListner {
+		public void onSuccess();
+		public void onFail(Exception e);
+	}
 	
-	public FileSendAsyncTask(Socket s, String p) {
+	public FileSendAsyncTask(Socket s, String p, SendListner l) {
 		socket = s;
 		path = p;
-	}
+		this.sendListner = l;
+	}	
 	
 	@Override
 	public void run() {		        
@@ -62,8 +69,11 @@ public class FileSendAsyncTask extends Thread {
 
             Log.d(MainActivity.FILE_TEST, "Send file using copyFile");
             FileStreamUtil.copyFile(fis, bos);
+            
+            sendListner.onSuccess();
         } catch (IOException e) {
             e.printStackTrace();
+            sendListner.onFail(e);
         }finally{
         	 if (socket != null) {
                  if (socket.isConnected()) {

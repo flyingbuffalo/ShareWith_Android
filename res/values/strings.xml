@@ -3,5 +3,10 @@
 
     <string name="app_name">ShareWith</string>
     <string name="information">기기정보</string>
-
+        
+    <string name="msg_file_send_success">파일 전송에 성공하였습니다</string>
+    <string name="msg_file_send_fail">파일 전송에 실패하였습니다</string>
+    <string name="msg_file_receive_success">파일 받기에 성공하였습니다</string>
+    <string name="msg_file_receive_fail">파일 받기에 실패하였습니다</string>
+	<string name="msg_file_receive_already_exist">이미 존재하는 파일입니다</string>
 </resources>

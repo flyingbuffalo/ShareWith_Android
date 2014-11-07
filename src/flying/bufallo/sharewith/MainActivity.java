@@ -1,5 +1,6 @@
 package flying.bufallo.sharewith;
 
+import java.io.File;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,7 @@ import com.flyingbuffalo.wfdmanager.WFDPairInfo.PairSocketConnectedListener;
 import com.flyingbuffalo.wfdmanager.WFDPairInfo;
 import com.ipaulpro.afilechooser.utils.FileUtils;
 
+import flying.bafallo.util.Util;
 import flying.bufallo.asynctask.FileReceiveAsyncTask;
 import flying.bufallo.asynctask.FileSendAsyncTask;
 
@@ -138,6 +140,7 @@ public class MainActivity extends Activity {
 	protected void onPause() {
 		super.onPause();
 		manager.unregisterReceiver();
+		manager.unpair();
 	}
 	
 	// START ANIMATION BLOCK
@@ -351,14 +354,47 @@ public class MainActivity extends Activity {
 	            public void onSocketConnected(Socket socket) {
 	                if (!READY_FILE_SEND && _path == null) {
 					    Log.d(FILE_TEST, "Server: connection done.");
-					    FileReceiveAsyncTask fileReceiveAsyncTask = new FileReceiveAsyncTask(socket);
+					    FileReceiveAsyncTask fileReceiveAsyncTask = new FileReceiveAsyncTask(socket, new FileReceiveAsyncTask.ReceiveListner() {
+							
+							@Override
+							public void onSuccess(File f) {
+								Util.addImageGallery(getApplicationContext(), f);
+								Log.d("FILE", (String) getText(R.string.msg_file_receive_success));
+//								Toast.makeText(getApplicationContext(), getText(R.string.msg_file_receive_success), Toast.LENGTH_SHORT);
+							}
+							
+							@Override
+							public void onFail(Exception e) {
+//								Toast.makeText(getApplicationContext(), getText(R.string.msg_file_receive_fail), Toast.LENGTH_SHORT);
+								Log.d("FILE", (String) getText(R.string.msg_file_receive_fail));
+							}
+
+							@Override
+							public void onAlreadyExist() {
+//								Toast.makeText(getApplicationContext(), getText(R.string.msg_file_receive_already_exist), Toast.LENGTH_SHORT);
+								Log.d("FILE", (String) getText(R.string.msg_file_receive_already_exist));
+							}
+						});
 					    fileReceiveAsyncTask.run();
 					} else {                    	
 					    Log.d(FILE_TEST, "Client: ready to send message");
 
 					    Log.d(FILE_TEST, "when socket connected, _path = " + _path);                        
 					    
-					    FileSendAsyncTask fileSendAsyncTask = new FileSendAsyncTask(socket, _path);
+					    FileSendAsyncTask fileSendAsyncTask = new FileSendAsyncTask(socket, _path, new FileSendAsyncTask.SendListner() {
+							
+							@Override
+							public void onSuccess() {
+//								Toast.makeText(getApplicationContext(), getText(R.string.msg_file_send_success), Toast.LENGTH_SHORT);
+								Log.d("FILE", (String) getText(R.string.msg_file_send_success));
+							}
+							
+							@Override
+							public void onFail(Exception e) {
+//								Toast.makeText(getApplicationContext(), getText(R.string.msg_file_send_fail), Toast.LENGTH_SHORT);
+								Log.d("FILE", (String) getText(R.string.msg_file_send_fail));
+							}
+						});
 					    fileSendAsyncTask.run();
 					    
 					    READY_FILE_SEND = false;
