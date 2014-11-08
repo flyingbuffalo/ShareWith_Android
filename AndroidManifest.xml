@@ -16,7 +16,7 @@
     <uses-feature android:name="android.hardware.wifi.direct" android:required="true"/>
     
     <uses-sdk
-        android:minSdkVersion="14"
+        android:minSdkVersion="16"
         android:targetSdkVersion="21" />
 
     <application

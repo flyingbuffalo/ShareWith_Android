@@ -45,4 +45,14 @@
         android:layout_below="@+id/include"
         android:text="start state" />
 
+    <TextView
+        android:id="@+id/status_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="40dp"
+        android:visibility="gone"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
 </RelativeLayout>

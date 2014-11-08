@@ -13,13 +13,15 @@ public class FileStreamUtil {
 	public static boolean copyFile(InputStream inputStream, OutputStream out) {
 		 byte buf[] = new byte[1024*1024];
 		 int len;
+		 int sum = 0;
 		 Log.d(MainActivity.FILE_TEST, "Start copy file");
 		 
 		 try {
 			 int i = 0;
 			 while ((len = inputStream.read(buf)) != -1) {
 				 out.write(buf, 0, len);
-				 Log.d(MainActivity.FILE_TEST, "copy buffer times = " + i++ + "and len = " + len);
+				 sum+=len;
+				 Log.d(MainActivity.FILE_TEST, "copy buffer times = " + i++ + "and len = " + len + " sum : "+sum);
 			 }
 			 out.close();
 			 inputStream.close();

@@ -66,7 +66,7 @@ public class MainActivity extends Activity {
 	boolean isBtnExist = false;	
 	
 	RelativeLayout main;
-	TextView textCenter;
+	TextView statusView;
 	ImageView backgroundCircle;
 	ImageView btnCenter;	
 	AnimatorSet animatorSet = new AnimatorSet();
@@ -86,7 +86,7 @@ public class MainActivity extends Activity {
 		main = (RelativeLayout) findViewById(R.id.main);
 		backgroundCircle = (ImageView)findViewById(R.id.devices_list_circle);
 		btnCenter = (ImageView) findViewById(R.id.center);
-		textCenter = (TextView)findViewById(R.id.information);
+		statusView = (TextView)findViewById(R.id.status_view);
 		
 		DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
 
@@ -112,6 +112,7 @@ public class MainActivity extends Activity {
 			public void onClick(View v) {
 				Log.d("TEST ANI", "click center");   
 				
+//				manager.unpair();
 				if(manager.mydevice.device.status != WifiP2pDevice.AVAILABLE){
 					Log.d("TEST", "unpair");
 					manager.unpair();
@@ -202,13 +203,13 @@ public class MainActivity extends Activity {
 			
 			@Override
 			public void onClick(View v) {
-				Toast.makeText(getApplicationContext(), "this is circle " + index, Toast.LENGTH_SHORT).show();
+//				Toast.makeText(getApplicationContext(), "this is circle " + index, Toast.LENGTH_SHORT).show();
 				
 				setInformation(index);				
 			}
 		});
 		
-		textCenter.setOnClickListener(new OnClickListener() {
+		statusView.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View arg0) {
@@ -246,14 +247,12 @@ public class MainActivity extends Activity {
 		
 	public void setInformation(final int index){
 		
-		btnCenter.setVisibility(View.GONE);
-		
-		textCenter.setText(_device_list.get(index).device.deviceName);
-		textCenter.setVisibility(View.VISIBLE);
+		statusView.setText(_device_list.get(index).device.deviceName);
+		statusView.setVisibility(View.VISIBLE);
 		
 		_device_index = index;
 		
-		textCenter.setOnClickListener(new OnClickListener() {
+		statusView.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
