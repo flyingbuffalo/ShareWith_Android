@@ -63,6 +63,13 @@ public class FileSendAsyncTask extends Thread {
             // file name
             out.println(title);
             out.flush();
+            
+            try {
+				sleep(2000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 
             FileInputStream fis = new FileInputStream(target);
             BufferedOutputStream bos = new BufferedOutputStream(socket.getOutputStream());
