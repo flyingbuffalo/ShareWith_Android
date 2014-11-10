@@ -31,8 +31,8 @@ import com.flyingbuffalo.wfdmanager.WFDDevice;
 import com.flyingbuffalo.wfdmanager.WFDManager;
 import com.flyingbuffalo.wfdmanager.WFDManager.WFDDeviceConnectedListener;
 import com.flyingbuffalo.wfdmanager.WFDManager.WFDDeviceDiscoveredListener;
-import com.flyingbuffalo.wfdmanager.WFDPairInfo.PairSocketConnectedListener;
 import com.flyingbuffalo.wfdmanager.WFDPairInfo;
+import com.flyingbuffalo.wfdmanager.WFDPairInfo.PairSocketConnectedListener;
 import com.ipaulpro.afilechooser.utils.FileUtils;
 
 import flying.bafallo.util.Util;
@@ -57,6 +57,9 @@ public class MainActivity extends Activity {
 	final Animation rotationAnim = new RotateAnimation(0, 360, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
 
 	final int DYNAMIC_BUTTON_ID = 0x8000;
+	
+	float centerHeight;
+	float centerWidth;
 	
 	float dpHeight;
 	float dpWidth;
@@ -90,6 +93,9 @@ public class MainActivity extends Activity {
 		
 		DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
 
+		centerHeight = displayMetrics.heightPixels / 2;
+		centerWidth = displayMetrics.widthPixels / 2;
+		
         dpHeight = displayMetrics.heightPixels / displayMetrics.density;
         dpWidth = displayMetrics.widthPixels / displayMetrics.density;
         
@@ -105,6 +111,7 @@ public class MainActivity extends Activity {
 		Log.d("TEST SCALE", "Scale : "+btnScale);
 		btnCenter.setScaleX(btnScale);
 		btnCenter.setScaleY(btnScale);
+		Log.d("TEST SCALE", "getHeight : " + btnCenter.getHeight());
 		
 		btnCenter.setOnClickListener(new OnClickListener() {
 			
@@ -166,13 +173,14 @@ public class MainActivity extends Activity {
 		}
 		
 		for(int i = 0; i < _device_list.size(); i++) {
-			double circle_x = x + (x-100)*Math.cos(Math.toRadians((360/_device_list.size())*i));
-			double circle_y = y + (x-100)*Math.sin(Math.toRadians((360/_device_list.size())*i));
+			double circle_x = centerWidth + (centerWidth-btnSize*0.5)*Math.cos(Math.toRadians((360/_device_list.size())*i))-btnSize/2;
+			double circle_y = centerHeight + (centerWidth-btnSize*0.5)*Math.sin(Math.toRadians((360/_device_list.size())*i))-btnSize/2;
 
 			createdCircle(circle_x, circle_y, i);
 			
 			Log.d("TEST ANI", "circle " + i + " position : " + circle_x + " , " + circle_y);
-		}		
+		}
+		
 		startFadeIn();
 	}
 
@@ -242,7 +250,7 @@ public class MainActivity extends Activity {
 		});
 		
 		aniList.add(alphaAnimation);	
-		main.addView(child, 100, 100);				
+		main.addView(child, (int)btnSize, (int)btnSize);				
 	}
 		
 	public void setInformation(final int index){
