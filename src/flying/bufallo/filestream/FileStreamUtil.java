@@ -3,6 +3,8 @@ package flying.bufallo.filestream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import flying.bufallo.sharewith.MainActivity;
 
@@ -19,7 +21,9 @@ public class FileStreamUtil {
 		 try {
 			 int i = 0;
 			 while ((len = inputStream.read(buf)) != -1) {
-				 out.write(buf, 0, len);
+				 ByteBuffer bb = ByteBuffer.wrap(buf, 0, len);
+				 bb.order(ByteOrder.LITTLE_ENDIAN);				 
+				 out.write(bb.array(), 0, len);
 				 sum+=len;
 				 Log.d(MainActivity.FILE_TEST, "copy buffer times = " + i++ + "and len = " + len + " sum : "+sum);
 			 }

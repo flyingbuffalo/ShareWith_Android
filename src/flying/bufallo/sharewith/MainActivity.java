@@ -314,6 +314,8 @@ public class MainActivity extends Activity {
                         }
 						
 						Log.d(FILE_TEST, "device index : " + _device_index);
+						// TODO sometimes arrayoutofindex => because onDevicesDiscovered.
+						// need to be atomic
 						WFDDevice device = _device_list.get(_device_index);
 
 						if(device != null) {

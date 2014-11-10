@@ -5,10 +5,14 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
+import flying.bafallo.util.EndianUtil;
 import flying.bufallo.filestream.FileStreamUtil;
 import flying.bufallo.sharewith.MainActivity;
 
@@ -53,15 +57,20 @@ public class FileSendAsyncTask extends Thread {
         title = tmp;
 
         try {
-            PrintWriter out = new PrintWriter(new BufferedWriter(new
-            OutputStreamWriter(socket.getOutputStream())), true);
-
-            // file size
-            out.println(fileSize);
+        	OutputStream out = socket.getOutputStream();
+        	
+        	// file name length
+            out.write(EndianUtil.intToByteArray(title.length()));
             out.flush();
-
+        	
             // file name
-            out.println(title);
+            ByteBuffer bb = ByteBuffer.wrap(title.getBytes());
+            bb.order(ByteOrder.LITTLE_ENDIAN);
+            out.write(bb.array());
+            out.flush();
+            
+            // file size
+            out.write(EndianUtil.longToByteArray(fileSize));
             out.flush();
             
             try {
