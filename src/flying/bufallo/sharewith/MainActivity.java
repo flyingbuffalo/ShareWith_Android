@@ -15,6 +15,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -363,47 +365,14 @@ public class MainActivity extends Activity {
 	            public void onSocketConnected(Socket socket) {
 	                if (!READY_FILE_SEND && _path == null) {
 					    Log.d(FILE_TEST, "Server: connection done.");
-					    FileReceiveAsyncTask fileReceiveAsyncTask = new FileReceiveAsyncTask(socket, new FileReceiveAsyncTask.ReceiveListner() {
-							
-							@Override
-							public void onSuccess(File f) {
-								Util.addImageGallery(getApplicationContext(), f);
-								Log.d("FILE", (String) getText(R.string.msg_file_receive_success));
-//								Toast.makeText(getApplicationContext(), getText(R.string.msg_file_receive_success), Toast.LENGTH_SHORT);
-							}
-							
-							@Override
-							public void onFail(Exception e) {
-//								Toast.makeText(getApplicationContext(), getText(R.string.msg_file_receive_fail), Toast.LENGTH_SHORT);
-								Log.d("FILE", (String) getText(R.string.msg_file_receive_fail));
-							}
-
-							@Override
-							public void onAlreadyExist() {
-//								Toast.makeText(getApplicationContext(), getText(R.string.msg_file_receive_already_exist), Toast.LENGTH_SHORT);
-								Log.d("FILE", (String) getText(R.string.msg_file_receive_already_exist));
-							}
-						});
+					    FileReceiveAsyncTask fileReceiveAsyncTask = new FileReceiveAsyncTask(socket, receiveListner);
 					    fileReceiveAsyncTask.run();
 					} else {                    	
 					    Log.d(FILE_TEST, "Client: ready to send message");
 
 					    Log.d(FILE_TEST, "when socket connected, _path = " + _path);                        
 					    
-					    FileSendAsyncTask fileSendAsyncTask = new FileSendAsyncTask(socket, _path, new FileSendAsyncTask.SendListner() {
-							
-							@Override
-							public void onSuccess() {
-//								Toast.makeText(getApplicationContext(), getText(R.string.msg_file_send_success), Toast.LENGTH_SHORT);
-								Log.d("FILE", (String) getText(R.string.msg_file_send_success));
-							}
-							
-							@Override
-							public void onFail(Exception e) {
-//								Toast.makeText(getApplicationContext(), getText(R.string.msg_file_send_fail), Toast.LENGTH_SHORT);
-								Log.d("FILE", (String) getText(R.string.msg_file_send_fail));
-							}
-						});
+					    FileSendAsyncTask fileSendAsyncTask = new FileSendAsyncTask(socket, _path, sendListner);
 					    fileSendAsyncTask.run();
 					    
 					    READY_FILE_SEND = false;
@@ -462,4 +431,62 @@ public class MainActivity extends Activity {
 		}
 	};
 	
+	FileReceiveAsyncTask.ReceiveListner receiveListner = new FileReceiveAsyncTask.ReceiveListner() {
+		
+		@Override
+		public void onSuccess(File f) {
+			Util.addImageGallery(getApplicationContext(), f);
+			Log.d("FILE", (String) getText(R.string.msg_file_receive_success));
+			handler.sendMessage(handler.obtainMessage(1));
+		}
+		
+		@Override
+		public void onFail(Exception e) {
+			Log.d("FILE", (String) getText(R.string.msg_file_receive_fail));
+			handler.sendMessage(handler.obtainMessage(2));
+		}
+
+		@Override
+		public void onAlreadyExist() {
+			Log.d("FILE", (String) getText(R.string.msg_file_receive_already_exist));
+			handler.sendMessage(handler.obtainMessage(3));
+		}
+	};
+	
+	FileSendAsyncTask.SendListner sendListner = new FileSendAsyncTask.SendListner() {
+		
+		@Override
+		public void onSuccess() {
+			Log.d("FILE", (String) getText(R.string.msg_file_send_success));
+			handler.sendMessage(handler.obtainMessage(4));
+		}
+		
+		@Override
+		public void onFail(Exception e) {
+			Log.d("FILE", (String) getText(R.string.msg_file_send_fail));
+			handler.sendMessage(handler.obtainMessage(5));
+		}
+	};
+	
+	private Handler handler = new Handler() {
+		public void handleMessage(Message msg){ // 메시지를 받는부분
+	        switch(msg.what){ // 메시지 처리
+	            case 1:
+	            	Toast.makeText(getApplicationContext(), getText(R.string.msg_file_receive_success), Toast.LENGTH_SHORT).show();
+	                break;
+	            case 2:
+	            	Toast.makeText(getApplicationContext(), getText(R.string.msg_file_receive_fail), Toast.LENGTH_SHORT).show();
+	                break;
+	            case 3:
+	            	Toast.makeText(getApplicationContext(), getText(R.string.msg_file_receive_already_exist), Toast.LENGTH_SHORT).show();
+	                break;
+	            case 4:
+	            	Toast.makeText(getApplicationContext(), getText(R.string.msg_file_send_success), Toast.LENGTH_SHORT).show();
+	            	break;
+	            case 5:
+	            	Toast.makeText(getApplicationContext(), getText(R.string.msg_file_send_fail), Toast.LENGTH_SHORT).show();
+	            	break;
+	        }
+	    };
+	};
 }
